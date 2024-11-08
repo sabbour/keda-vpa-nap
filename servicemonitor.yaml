@@ -1,0 +1,21 @@
+apiVersion: azmonitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: serverloader
+  labels:
+    app: serverloader
+spec:
+  labelLimit: 63
+  labelNameLengthLimit: 511
+  labelValueLengthLimit: 1023
+  namespaceSelector:
+    matchNames:
+    - keda-vpa-nap
+  selector:
+    matchLabels:
+      app: serverloader
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /metrics
+    scheme: http

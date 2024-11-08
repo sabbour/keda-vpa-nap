@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serverloader
+  labels:
+    app: serverloader
+spec:
+  selector:
+    matchLabels:
+      app: serverloader
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: serverloader
+    spec:
+      containers:
+        - name: serverloader
+          image: ghcr.io/sabbour/aks-scaling-nap-demo:main
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /stats
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /stats
+              port: http
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 1"]
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - serverloader
+            topologyKey: "kubernetes.io/hostname"
